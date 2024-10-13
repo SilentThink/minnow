@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <deque>
+#include <string>
 #include <string_view>
 
 class Reader;
