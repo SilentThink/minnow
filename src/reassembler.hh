@@ -10,15 +10,14 @@ struct Interval
   uint64_t end;
   std::string data;
 
-  bool operator<(const Interval& other) const {
-    if (start == other.start) {
+  bool operator<( const Interval& other ) const
+  {
+    if ( start == other.start ) {
       return end < other.end;
     }
     return start < other.start;
   }
 };
-
-
 
 class Reassembler
 {
@@ -60,7 +59,7 @@ public:
 
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
-  std::set<Interval> buf_{};
+  std::set<Interval> buf_ {};
   uint64_t nxt_expected_idx_ = 0;
   uint64_t eof_idx_ = UINT64_MAX;
 };
