@@ -21,8 +21,12 @@ void TCPReceiver::receive( TCPSenderMessage message )
   }
   Wrap32 zero_point = isn_.value();
   uint64_t checkpoint = writer().bytes_pushed() + 1;
-  uint64_t abs_seqno = message.seqno.unwrap(zero_point, checkpoint);
-  uint64_t stream_index = abs_seqno + static_cast<uint64_t>(message.SYN) - 1;
+  Wrap32 sequo = message.seqno;
+  if (message.SYN) {
+    sequo = sequo+1;
+  }
+  uint64_t abs_seqno = sequo.unwrap(zero_point, checkpoint);
+  uint64_t stream_index = abs_seqno - 1;
   reassembler_.insert(stream_index, move(message.payload), message.FIN);
 }
 
