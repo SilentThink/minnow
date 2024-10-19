@@ -1,3 +1,4 @@
+// network_interface.hh
 #pragma once
 
 #include <queue>
@@ -5,6 +6,7 @@
 #include "address.hh"
 #include "ethernet_frame.hh"
 #include "ipv4_datagram.hh"
+#include <map>
 
 // A "network interface" that connects IP (the internet layer, or network layer)
 // with Ethernet (the network access layer, or link layer).
@@ -81,4 +83,8 @@ private:
 
   // Datagrams that have been received
   std::queue<InternetDatagram> datagrams_received_ {};
+
+  std::map<uint32_t, std::tuple<EthernetAddress, size_t, bool>> arp_table_;
+  std::queue<std::pair<InternetDatagram, Address>> pending_datagrams_;
+  uint64_t current_time_;
 };

@@ -65,10 +65,12 @@ int main()
   try {
     {
       const EthernetAddress local_eth = random_private_ethernet_address();
-      NetworkInterfaceTestHarness test { "typical ARP workflow", local_eth, Address( "4.3.2.1", 0 ) };
+      NetworkInterfaceTestHarness test {
+        "typical ARP workflow", local_eth, Address( "4.3.2.1", 0 ) }; // 4.3.2.1 是本机IP地址
 
-      const auto datagram = make_datagram( "5.6.7.8", "13.12.11.10" );
-      test.execute( SendDatagram { datagram, Address( "192.168.0.1", 0 ) } );
+      const auto datagram
+        = make_datagram( "5.6.7.8", "13.12.11.10" ); // 5.6.7.8 是源IP地址，13.12.11.10 是目的IP地址
+      test.execute( SendDatagram { datagram, Address( "192.168.0.1", 0 ) } ); // 192.168.0.1 是网关IP地址
 
       // outgoing datagram should result in an ARP request
       test.execute( ExpectFrame { make_frame(
@@ -170,7 +172,8 @@ int main()
       test.execute( ExpectNoFrame {} );
       test.execute( Tick { 4990 } );
       test.execute( SendDatagram { make_datagram( "17.17.17.17", "18.18.18.18" ), Address( "10.0.0.1", 0 ) } );
-      test.execute( ExpectNoFrame {} );
+      test.execute(
+        ExpectNoFrame {} ); // todo：这里的问题在5秒内不会发送两次同样的ARP请求，因为之前的ARP请求还没有回复
       test.execute( Tick { 20 } );
       // pending mapping should now expire
       test.execute( SendDatagram { make_datagram( "42.41.40.39", "13.12.11.10" ), Address( "10.0.0.1", 0 ) } );
@@ -227,7 +230,7 @@ int main()
       // after another 11 seconds, need to ARP again
       test.execute( Tick { 11000 } );
       test.execute( SendDatagram { datagram4, Address( "192.168.0.1", 0 ) } );
-      test.execute( ExpectFrame { make_frame(
+      test.execute( ExpectFrame { make_frame( // todo
         local_eth,
         ETHERNET_BROADCAST,
         EthernetHeader::TYPE_ARP,
