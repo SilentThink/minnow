@@ -35,7 +35,7 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
   uint32_t next_hop_ip = next_hop.ipv4_numeric();
 
   auto it = arp_table_.find( next_hop_ip );
-  if ( it != arp_table_.end() && std::get<1>( it->second ) > current_time_ ) {
+  if ( it != arp_table_.end() && std::get<1>( it->second ) >= current_time_ ) {
     // 有有效的ARP映射，可以发送数据报
     EthernetFrame frame;
     frame.header.type = EthernetHeader::TYPE_IPv4;
@@ -48,6 +48,8 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
 
     transmit( frame );
   } else {
+    // 将数据报保存到待处理队列
+    pending_datagrams_.emplace( dgram, next_hop );
     // 没有有效的ARP映射，发送ARP请求
     if ( it == arp_table_.end() || current_time_ - std::get<1>( it->second ) >= 5000 ) {
       ARPMessage arp_request;
@@ -65,13 +67,10 @@ void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Addre
       Serializer arp_serializer;
       arp_request.serialize( arp_serializer );
       arp_frame.payload = arp_serializer.output();
-
-      transmit( arp_frame );
       arp_table_[next_hop_ip] = { EthernetAddress(), current_time_, false };
+      transmit( arp_frame );
     }
-
-    // 将数据报保存到待处理队列
-    pending_datagrams_.emplace( dgram, next_hop );
+    
   }
 }
 
